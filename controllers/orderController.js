@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const { sendOrderConfirmation } = require('../utils/sendEmail');
+const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
 
 // @desc    Create order (public)
 // @route   POST /api/orders
@@ -29,13 +29,17 @@ const createOrder = asyncHandler(async (req, res) => {
   for (const item of items) {
     if (item.product) {
       await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -(item.quantity || 1) }
+        $inc: { stock: -(item.quantity || 1) },
       });
     }
   }
 
-  // ✅ Order confirmation email (fail hone pe order response nahi rukega)
-  sendOrderConfirmation(order).catch(err => console.error('Email error:', err));
+  // ✅ Send order confirmation email (only if customer provided email)
+  if (order.customer?.email) {
+    sendOrderConfirmation(order).catch((err) =>
+      console.error('❌ Confirmation email failed:', err.message)
+    );
+  }
 
   res.status(201).json({ success: true, order });
 });
@@ -62,18 +66,34 @@ const getOrderById = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
-// @desc    Update order status
+// @desc    Update order status (admin)
 // @route   PATCH /api/orders/:id/status
 // @access  Private/Admin
 const updateStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
+
   const order = await Order.findById(req.params.id);
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
   }
+
+  const previousStatus = order.status;
   order.status = status;
   await order.save();
+
+  // ✅ Send email only when status actually changes to shipped or delivered
+  const notifiable = ['shipped', 'delivered'];
+  if (previousStatus !== status && notifiable.includes(status)) {
+    if (order.customer?.email) {
+      sendStatusUpdateEmail(order).catch((err) =>
+        console.error(`❌ Status email [${status}] failed:`, err.message)
+      );
+    } else {
+      console.log(`ℹ️  No email on file for order #${String(order._id).slice(-8)} — skipping`);
+    }
+  }
+
   res.json({ success: true, order });
 });
 
@@ -100,14 +120,13 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   const totalProducts = await Product.countDocuments();
   const activeProducts = await Product.countDocuments({ isActive: true });
 
-  // Revenue (from delivered orders)
+  // Revenue from delivered + shipped orders
   const revenueAgg = await Order.aggregate([
     { $match: { status: { $in: ['delivered', 'shipped'] } } },
     { $group: { _id: null, total: { $sum: '$total' } } },
   ]);
   const revenue = revenueAgg[0]?.total || 0;
 
-  // Recent orders
   const recentOrders = await Order.find().sort('-createdAt').limit(5);
 
   res.json({
