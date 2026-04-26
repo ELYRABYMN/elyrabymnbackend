@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Login · MINIMAL LUXE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Figtree',sans-serif; background:#F8F1F1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.login-card { background:white; padding:48px 40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.06); }
+.login-card h1 { font-size:22px; font-weight:500; letter-spacing:6px; text-align:center; color:#2c2c2c; margin-bottom:6px; }
+.login-card .subtitle { text-align:center; font-size:11px; color:#999; letter-spacing:2px; text-transform:uppercase; margin-bottom:30px; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:11px; color:#666; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; }
+.field input { width:100%; padding:12px 14px; border:1px solid #ddd; font-family:'Figtree',sans-serif; font-size:13px; outline:none; transition:border-color 0.2s; }
+.field input:focus { border-color:#2c2c2c; }
+.btn { width:100%; padding:14px; background:#2c2c2c; color:white; border:none; font-family:'Figtree',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; margin-top:8px; transition:background 0.2s; }
+.btn:hover { background:#444; }
+.btn:disabled { opacity:0.5; cursor:not-allowed; }
+.error { background:#fee; color:#c0392b; padding:10px; font-size:12px; margin-bottom:14px; display:none; border-left:3px solid #c0392b; }
+.hint { font-size:11px; color:#999; text-align:center; margin-top:20px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="login-card">
+  <h1>MINIMAL LUXE</h1>
+  <p class="subtitle">Admin Panel</p>
+  <div class="error" id="err"></div>
+  <form id="loginForm">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" required>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" required >
+    </div>
+    <button class="btn" type="submit" id="btn">Sign In</button>
+  </form>
+
+</div>
+<script>
+if (localStorage.getItem('ml_token')) window.location.href = '/admin/dashboard.html';
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  err.style.display = 'none';
+  try {
+    const res = await fetch('/api/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    localStorage.setItem('ml_token', data.token);
+    localStorage.setItem('ml_user', JSON.stringify(data.user));
+    window.location.href = '/admin/dashboard.html';
+  } catch (e) {
+    err.textContent = e.message || 'Login failed';
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+});
+</script>
+</body>
+</html>
