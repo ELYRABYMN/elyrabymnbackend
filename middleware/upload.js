@@ -2,7 +2,11 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = path.join(__dirname, '..', 'uploads');
+// 🔥 Production pe Render persistent disk, local dev pe project folder
+const uploadDir = process.env.NODE_ENV === 'production'
+  ? '/var/data/uploads'
+  : path.join(__dirname, '..', 'uploads');
+
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
