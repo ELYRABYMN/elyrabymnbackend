@@ -30,6 +30,7 @@ body { font-family:'Figtree',sans-serif; background:#F8F1F1; min-height:100vh; d
   <form id="loginForm">
     <div class="field">
       <label>Email</label>
+<<<<<<< HEAD
       <input type="email" id="email" required value="admin@minimalluxe.com">
     </div>
     <div class="field">
@@ -39,6 +40,17 @@ body { font-family:'Figtree',sans-serif; background:#F8F1F1; min-height:100vh; d
     <button class="btn" type="submit" id="btn">Sign In</button>
   </form>
   <p class="hint">Default: admin@minimalluxe.com / Admin@123</p>
+=======
+      <input type="email" id="email" required>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" required >
+    </div>
+    <button class="btn" type="submit" id="btn">Sign In</button>
+  </form>
+
+>>>>>>> 4cc74f4b0beeb518f0c2f0a3d4e76f76662e9922
 </div>
 <script>
 if (localStorage.getItem('ml_token')) window.location.href = '/admin/dashboard.html';

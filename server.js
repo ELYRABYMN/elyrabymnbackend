@@ -2,7 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+<<<<<<< HEAD
 const fs = require('fs');
+=======
+>>>>>>> 4cc74f4b0beeb518f0c2f0a3d4e76f76662e9922
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
@@ -11,6 +14,7 @@ connectDB();
 
 const app = express();
 
+<<<<<<< HEAD
 // 🔥 Uploads directory — Production: Render disk, Local: project folder
 const uploadsPath = process.env.NODE_ENV === 'production'
   ? '/var/data/uploads'
@@ -19,13 +23,20 @@ const uploadsPath = process.env.NODE_ENV === 'production'
 // Folder check (just in case multer hasn't run yet)
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
 
+=======
+>>>>>>> 4cc74f4b0beeb518f0c2f0a3d4e76f76662e9922
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+<<<<<<< HEAD
 // Static files — uploaded images (now from persistent disk on production)
 app.use('/uploads', express.static(uploadsPath));
+=======
+// Static files — uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+>>>>>>> 4cc74f4b0beeb518f0c2f0a3d4e76f76662e9922
 
 // Admin panel static files
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
@@ -44,7 +55,10 @@ app.get('/api', (req, res) => {
     success: true,
     message: 'MINIMAL LUXE API running',
     version: '1.0.0',
+<<<<<<< HEAD
     uploadsPath, // helpful for debugging
+=======
+>>>>>>> 4cc74f4b0beeb518f0c2f0a3d4e76f76662e9922
     endpoints: {
       auth: '/api/auth',
       products: '/api/products',
@@ -72,7 +86,13 @@ app.listen(PORT, () => {
 ║  ✦ Running on: http://localhost:${PORT}     ║
 ║  ✦ Admin panel: http://localhost:${PORT}/admin ║
 ║  ✦ API root:   http://localhost:${PORT}/api   ║
+<<<<<<< HEAD
 ║  ✦ Uploads dir: ${uploadsPath}
 ╚══════════════════════════════════════════╝
   `);
 });
+=======
+╚══════════════════════════════════════════╝
+  `);
+});
+>>>>>>> 4cc74f4b0beeb518f0c2f0a3d4e76f76662e9922
